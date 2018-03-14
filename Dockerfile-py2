@@ -1,0 +1,30 @@
+FROM ubuntu:16.04
+MAINTAINER Wilf
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+	git \
+	python \
+	python-dev \
+	python-setuptools \
+	python-pip \
+	nginx \
+	sqlite3 && \
+	pip install -U pip setuptools && \
+  	rm -rf /var/lib/apt/lists/*
+
+RUN pip install uwsgi
+
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+COPY nginx-app.conf /etc/nginx/sites-available/default
+
+COPY . /home/docker/code/
+RUN pip install -r /home/docker/code/app/requirements.txt
+
+# install django, normally you would remove this step because your project would already
+# be installed in the code/app/ directory
+
+EXPOSE 80
+
+CMD ["sh","/home/docker/code/start.sh"]
